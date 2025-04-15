@@ -41,10 +41,14 @@ final class CocktailDetailViewController: UIViewController {
 
         descriptionLabel.text = viewModel.cocktail.longDescription
         descriptionLabel.numberOfLines = 0
+        descriptionLabel.font = .boldSystemFont(ofSize: 16)
+        descriptionLabel.textColor = .darkGray
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        ingredientsLabel.text = "Ingredients:\n" + viewModel.cocktail.ingredients.joined(separator: ", ")
+        ingredientsLabel.text = "Ingredients -\n\n" + viewModel.cocktail.ingredients.joined(separator: "\n")
         ingredientsLabel.numberOfLines = 0
+        ingredientsLabel.font = .boldSystemFont(ofSize: 14)
+        ingredientsLabel.textColor = .gray
         ingredientsLabel.translatesAutoresizingMaskIntoConstraints = false
 
         favoriteButton.setTitle("★ Favorite", for: .normal)
