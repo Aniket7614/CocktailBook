@@ -35,9 +35,12 @@ final class CocktailCell: UITableViewCell {
         titleLabel.font = .boldSystemFont(ofSize: 18)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        subtitleLabel.font = .systemFont(ofSize: 14)
+        subtitleLabel.font = .systemFont(ofSize: 12)
         subtitleLabel.textColor = .gray
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        subtitleLabel.numberOfLines = 0
+        subtitleLabel.lineBreakMode = .byWordWrapping
+
 
         favoriteIcon.translatesAutoresizingMaskIntoConstraints = false
         favoriteIcon.tintColor = .systemYellow
@@ -54,13 +57,15 @@ final class CocktailCell: UITableViewCell {
             cocktailImageView.widthAnchor.constraint(equalToConstant: 60),
             cocktailImageView.heightAnchor.constraint(equalToConstant: 60),
 
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 30),
             titleLabel.leadingAnchor.constraint(equalTo: cocktailImageView.trailingAnchor, constant: 16),
             titleLabel.trailingAnchor.constraint(equalTo: favoriteIcon.leadingAnchor, constant: -8),
-
+            
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
             subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-
+            subtitleLabel.trailingAnchor.constraint(equalTo: favoriteIcon.leadingAnchor, constant: -8),
+            subtitleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
+            
             favoriteIcon.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             favoriteIcon.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             favoriteIcon.widthAnchor.constraint(equalToConstant: 20),

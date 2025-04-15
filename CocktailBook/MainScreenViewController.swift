@@ -1,6 +1,4 @@
 import UIKit
-
-import UIKit
 import Combine
 
 final class MainScreenViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
@@ -29,14 +27,38 @@ final class MainScreenViewController: UIViewController, UITableViewDelegate, UIT
         tableView.delegate = self
         tableView.translatesAutoresizingMaskIntoConstraints = false
         
+        // Title Label
+        let titleLabel = UILabel()
+        titleLabel.text = "All Cocktails"
+        titleLabel.font = UIFont.systemFont(ofSize: 28, weight: .bold)
+        titleLabel.textAlignment = .left
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Add the titleLabel to the view before setting up constraints
+        view.addSubview(titleLabel)
+        
         view.addSubview(tableView)
+        view.addSubview(segmentedControl)
+        
         NSLayoutConstraint.activate([
+            // Constraints for SegmentedControl
+            segmentedControl.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 60),
+            segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+
+            // Constraints for Title Label
+            titleLabel.bottomAnchor.constraint(equalTo: segmentedControl.topAnchor, constant: -12),
+            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            // Constraints for TableView
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
     }
+
     // MARK: - UITableViewDataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         viewModel.cocktails.count
@@ -51,6 +73,10 @@ final class MainScreenViewController: UIViewController, UITableViewDelegate, UIT
         let isFavorite = viewModel.isFavorite(cocktail)
         cell.configure(with: cocktail, isFavorite: isFavorite)
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+            return 100 
     }
     
     // MARK: - UITableViewDelegate
