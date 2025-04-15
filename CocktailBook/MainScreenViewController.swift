@@ -1,41 +1,86 @@
 import UIKit
 
-class MainScreenViewController: UIViewController {
+import UIKit
+import Combine
+
+final class MainScreenViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    private let viewModel = CocktailListViewModel()
+    private var cancellables = Set<AnyCancellable>()
     
-    private let cocktailsAPI: CocktailsAPI = FakeCocktailsAPI()
+    private let tableView = UITableView()
+    private let segmentedControl = UISegmentedControl(items: CocktailFilter.allCases.map { $0.rawValue })
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        setupUI()
+        bindViewModel()
+    }
+    
+    private func setupUI() {
+        title = "All Cocktails"
+        view.backgroundColor = .systemBackground
         
-        let scrollView = UIScrollView()
-        view.addSubview(scrollView)
+        segmentedControl.selectedSegmentIndex = 0
+        segmentedControl.addTarget(self, action: #selector(filterChanged), for: .valueChanged)
+        navigationItem.titleView = segmentedControl
         
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
-        scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor).isActive = true
-        scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor).isActive = true
+        tableView.register(CocktailCell.self, forCellReuseIdentifier: CocktailCell.identifier)
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.translatesAutoresizingMaskIntoConstraints = false
         
-        let label = UILabel()
-        label.numberOfLines = 0
-        scrollView.addSubview(label)
-        
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-        label.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
-        label.widthAnchor.constraint(equalTo: scrollView.widthAnchor).isActive = true
-        label.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor).isActive = true
-        label.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor).isActive = true
-
-        cocktailsAPI.fetchCocktails { result in
-            if case let .success(data) = result {
-                if let jsonString = String(data: data, encoding: .utf8) {
-                    DispatchQueue.main.async {
-                        label.text = jsonString
-                    }
-                }
-            }
+        view.addSubview(tableView)
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+    }
+    // MARK: - UITableViewDataSource
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        viewModel.cocktails.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: CocktailCell.identifier, for: indexPath) as? CocktailCell else {
+            return UITableViewCell()
         }
+        
+        let cocktail = viewModel.cocktails[indexPath.row]
+        let isFavorite = viewModel.isFavorite(cocktail)
+        cell.configure(with: cocktail, isFavorite: isFavorite)
+        return cell
+    }
+    
+    // MARK: - UITableViewDelegate
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        let cocktail = viewModel.cocktails[indexPath.row]
+        let detailVM = CocktailDetailViewModel(cocktail: cocktail, listViewModel: viewModel)
+        let detailVC = CocktailDetailViewController(viewModel: detailVM)
+        navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
+    @objc private func filterChanged(_ sender: UISegmentedControl) {
+        let selectedFilter = CocktailFilter.allCases[sender.selectedSegmentIndex]
+        viewModel.filter = selectedFilter
+    }
+    
+    private func bindViewModel() {
+        viewModel.$cocktails
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.tableView.reloadData()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.$filter
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] filter in
+                self?.title = "\(filter.rawValue) Cocktails"
+            }
+            .store(in: &cancellables)
     }
 }
